@@ -7,11 +7,11 @@ public protocol NetworkService {
         sharedHeaders: [String: String]
     )
 
-    func request<Response: Decodable>(
-        httpMethod: String,
+    func request(
+        httpMethod: HttpMethod,
         path: String,
         headerParams: [String: String]?,
         queryParams: [String: String]?,
         body: Encodable?
-    ) async throws -> Response
+    ) async throws -> NetworkOperationResult
 }
