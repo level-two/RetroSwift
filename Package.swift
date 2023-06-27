@@ -13,9 +13,11 @@ let package = Package(
     targets: [
         .target(
             name: "RetroSwift",
+            path: "Sources",
             dependencies: []),
         .testTarget(
             name: "RetroSwiftTests",
+            path: "Tests",
             dependencies: ["RetroSwift"]),
     ]
 )
