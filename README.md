@@ -1,6 +1,6 @@
 # RetroSwift
 
-This framework suggests the approach to API contract definition in the Retrofit-like fashion on Swift.
+This framework provides the approach to API contract definition in the Retrofit-like fashion on Swift.
 
 It gives possibility to define API in this way:
 
@@ -81,7 +81,7 @@ class ApiDomain: NetworkProviding {
 }
 ```
 
-where NetworkService is something implementing HTTP communication through the network:
+where NetworkService is layer providing HTTP communication through the network:
 
 ```swift
 public protocol NetworkService {
