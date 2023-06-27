@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "RetroSwift",
-    platforms: [.iOS(.v15)],
+    platforms: [.iOS(.v13)],
     products: [
         .library(
             name: "RetroSwift",
@@ -15,10 +15,10 @@ let package = Package(
         .target(
             name: "RetroSwift",
             dependencies: [],
-            path: "Sources"),
+            path: "RetroSwift"),
         .testTarget(
             name: "RetroSwiftTests",
             dependencies: ["RetroSwift"],
-            path: "Tests")
+            path: "RetroSwiftTests")
     ]
 )

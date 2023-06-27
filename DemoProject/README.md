@@ -1,8 +1,8 @@
 # RetroSwift
 
-This framework suggests the approach to API contract definition in the Retrofit-like fashion on Swift.
+This project demonstrates the way of API contract definition in the Retrofit-like fashion on Swift.
 
-It gives possibility to define API in this way:
+It gives us possibility to define API in this way:
 
 ```swift
 final class SchedulesApi: ApiDomain {
@@ -13,11 +13,11 @@ final class SchedulesApi: ApiDomain {
     var createSchedule: (CreateScheduleRequest) async throws -> CreateScheduleResponse
 
     @Delete("/api/v1/schedule/{schedule_id}")
-    var deleteSchedule: (DeleteScheduleRequest) async throws -> Either<DeleteScheduleResponse, DeleteScheduleErrorResponse>
+    var deleteSchedule: (DeleteScheduleRequest) async throws -> DeleteScheduleResponse
 }
 ```
 
-Furthermore *Request types provide more details on contract with the endpoints, namely on particular data fields and their matching to the HTTP params - query, header, path, body:
+Additionally to these definitions *Request types provide more details on contract with the endpoints, namely on particular data fields and their matching to the HTTP params - query, header, path, body:
 
 ```swift
 struct GetSchedulesRequest {
@@ -45,8 +45,6 @@ let request = GetSchedulesRequest(page: 1, schedulesPerPage: 30, accountId: "acc
 let response = try await api.getSchedules(request)
 ```
 
-It is also possible to get decoded error response in case of unsuccess responses (status code is out of 200...299) and non-empty response body. It can be achieved by marking expected response type as `Either<DeleteScheduleResponse, DeleteScheduleErrorResponse>`
-
 Additionally responses can be mocked in a straightforward and self-describing way:
 
 ```swift
@@ -57,17 +55,12 @@ api.getSchedules = { _ in
 api.deleteSchedule = { _ in
     throw URLError(.userAuthenticationRequired)
 }
-
-api.deleteSchedule = { _ in
-    .errorResponse(DeleteScheduleErrorResponse(errorMessage: "Schedule not found"))
-}
-
 ```
 
 And the last thing. ApiDomain in the simplest case can be implemented as follow:
 
 ```swift
-class ApiDomain: NetworkProviding {
+final class BandsInTownDomain: NetworkProviding {
     required init(networkService: NetworkService) {
         self.networkService = networkService
 
@@ -77,26 +70,40 @@ class ApiDomain: NetworkProviding {
             sharedHeaders: ["Content-Type": "application/json"])
     }
 
-    let networkService: NetworkService
+    func perform<Request, Response: Decodable>(
+        request: Request,
+        to endpoint: EndpointDescribing
+    ) async throws -> Response {
+
+        try await networkService
+            .request(
+                httpMethod: endpoint.method.asString,
+                path: resolvePath(format: endpoint.path, params: request),
+                headerParams: getHeaderParams(from: request),
+                queryParams: getQueryParams(from: request),
+                body: getBody(from: request))
+    }
+
+    private let networkService: NetworkService
 }
 ```
 
 where NetworkService is something implementing HTTP communication through the network:
 
 ```swift
-public protocol NetworkService {
+protocol NetworkService {
     func setConfiguration(
         scheme: String,
         host: String,
         sharedHeaders: [String: String]
     )
 
-    func request(
-        httpMethod: HttpMethod,
+    func request<Response: Decodable>(
+        httpMethod: String,
         path: String,
         headerParams: [String: String]?,
         queryParams: [String: String]?,
         body: Encodable?
-    ) async throws -> NetworkOperationResult
+    ) async throws -> Response
 }
 ```
