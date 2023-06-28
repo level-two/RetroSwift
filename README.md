@@ -1,6 +1,6 @@
 # RetroSwift
 
-This framework provides the approach to API contract definition in the Retrofit-like fashion on Swift.
+This library provides the approach to API contract definition in the Retrofit-like fashion on Swift.
 
 It gives possibility to define API in this way:
 
@@ -64,24 +64,24 @@ api.deleteSchedule = { _ in
 
 ```
 
-And the last thing. ApiDomain in the simplest case can be implemented as follow:
+`ApiDomain` in the simplest case can be implemented as follow:
 
 ```swift
 class ApiDomain: NetworkProviding {
-    required init(networkService: NetworkService) {
-        self.networkService = networkService
+    override init(networkService: NetworkService) {
+        super.init(networkService: networkService)
 
         networkService.setConfiguration(
             scheme: "https",
-            host: "rest.bandsintown.com",
+            host: "rest.somedomain.com",
             sharedHeaders: ["Content-Type": "application/json"])
     }
-
-    let networkService: NetworkService
 }
 ```
 
-where NetworkService is layer providing HTTP communication through the network:
+More complex solutions can include, for example, session token management.
+
+`NetworkService` is the protocol describing HTTP network communication layer. 
 
 ```swift
 public protocol NetworkService {
@@ -100,3 +100,37 @@ public protocol NetworkService {
     ) async throws -> NetworkOperationResult
 }
 ```
+
+`DemoProject` contains simple implementation based on the UrlSession, but you can provide yours depending on your needs.
+
+## Adding RetroSwift as a Dependency
+
+### Xcode
+
+If you're working with a project in Xcode RetroSwift can be easily integrated:
+1. In Xcode, select `File > Add Packages...`
+1. Or go to the project's settings, select your project from the list, go to the `Package Dependencies` and click `+` button
+1. Specify the Repository: `https://github.com/level-two/RetroSwift`
+1. Go to the Target, on `General` tab find `Frameworks, Libraries and Embedded content` section, click '+' and add RetroSwift library as a dependency 
+
+### Swift Package Manager
+
+To use this library in a SwiftPM project, add the following line to the dependencies in your `Package.swift` file:
+
+```swift
+.package(url: "https://github.com/level-two/RetroSwift", from: "0.0.1"),
+```
+
+and include it as a dependency for your target:
+
+```swift
+.target(
+    ...
+    dependencies: [
+        "RetroSwift",
+    ],
+    ...
+),
+```
+
+Finally, add `import RetroSwift` to your source code.
