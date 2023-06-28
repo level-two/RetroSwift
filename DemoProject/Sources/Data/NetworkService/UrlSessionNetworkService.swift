@@ -104,31 +104,25 @@ private extension UrlSessionNetworkService {
             print("Response:")
             print(response?.description ?? "")
 
-            guard let httpResponse = response as? HTTPURLResponse else { fatalError() }
+            let statusCode = (response as? HTTPURLResponse)?.statusCode
 
             if let error {
+                print("Error:")
+                print(error.localizedDescription)
+
                 continuation.resume(
                     returning: NetworkOperationResult(
-                        statusCode: httpResponse.statusCode,
+                        statusCode: statusCode,
                         result: .failure(error))
                 )
-            } else if let data {
-                print("Body:")
-                print(String(data: data, encoding: .utf8) ?? "")
-
-                continuation.resume(
-                    returning: NetworkOperationResult(
-                        statusCode: httpResponse.statusCode,
-                        result: .success(data))
-                )
             } else {
-                // Empty response is not supported at the moment
-                struct UnsupportedEmptyResponseError: Error { }
+                print("Body:")
+                print(String(data: data ?? Data(), encoding: .utf8) ?? "")
 
                 continuation.resume(
                     returning: NetworkOperationResult(
-                        statusCode: 0,
-                        result: .failure(UnsupportedEmptyResponseError()))
+                        statusCode: statusCode,
+                        result: .success(data ?? Data()))
                 )
             }
         }

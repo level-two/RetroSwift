@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		381D189E2A479B6C007BE8F7 /* ArtistEventsErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 381D189D2A479B6C007BE8F7 /* ArtistEventsErrorResponse.swift */; };
+		384BF4212A4C99EE00BF4013 /* RetroSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 384BF4202A4C99EE00BF4013 /* RetroSwift */; };
 		387AF71B2A4B37D100980426 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 387AF7192A4B37D100980426 /* LICENSE */; };
 		387AF71C2A4B37D100980426 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 387AF71A2A4B37D100980426 /* README.md */; };
-		38A487F02A4B94F0007D25B2 /* RetroSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 38A487EF2A4B94F0007D25B2 /* RetroSwift */; };
 		38D61E892A4B7DEF000DD693 /* UrlSessionNetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38D61E882A4B7DEF000DD693 /* UrlSessionNetworkService.swift */; };
 		38D7E7512A41C88500274962 /* RetroSwiftApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38D7E7502A41C88500274962 /* RetroSwiftApp.swift */; };
 		38D7E7532A41C88500274962 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38D7E7522A41C88500274962 /* ContentView.swift */; };
@@ -28,7 +28,7 @@
 		381D189D2A479B6C007BE8F7 /* ArtistEventsErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistEventsErrorResponse.swift; sourceTree = "<group>"; };
 		387AF7192A4B37D100980426 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		387AF71A2A4B37D100980426 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		389DB8DE2A4B93C10050B531 /* RetroSwift */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = RetroSwift; path = ..; sourceTree = "<group>"; };
+		38A4881F2A4C9969007D25B2 /* RetroSwift */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = RetroSwift; path = ..; sourceTree = "<group>"; };
 		38D61E882A4B7DEF000DD693 /* UrlSessionNetworkService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UrlSessionNetworkService.swift; sourceTree = "<group>"; };
 		38D7E74D2A41C88500274962 /* RetroSwiftDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RetroSwiftDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		38D7E7502A41C88500274962 /* RetroSwiftApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroSwiftApp.swift; sourceTree = "<group>"; };
@@ -48,7 +48,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				38A487F02A4B94F0007D25B2 /* RetroSwift in Frameworks */,
+				384BF4212A4C99EE00BF4013 /* RetroSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -67,7 +67,7 @@
 		389DB8DD2A4B93C10050B531 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				389DB8DE2A4B93C10050B531 /* RetroSwift */,
+				38A4881F2A4C9969007D25B2 /* RetroSwift */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -190,7 +190,7 @@
 			);
 			name = RetroSwiftDemo;
 			packageProductDependencies = (
-				38A487EF2A4B94F0007D25B2 /* RetroSwift */,
+				384BF4202A4C99EE00BF4013 /* RetroSwift */,
 			);
 			productName = RetroSwift;
 			productReference = 38D7E74D2A41C88500274962 /* RetroSwiftDemo.app */;
@@ -461,7 +461,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		38A487EF2A4B94F0007D25B2 /* RetroSwift */ = {
+		384BF4202A4C99EE00BF4013 /* RetroSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RetroSwift;
 		};

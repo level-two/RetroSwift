@@ -1,16 +1,13 @@
 import Foundation
 
-public protocol NetworkProviding: AnyObject {
-    var networkService: NetworkService { get }
+open class NetworkProviding {
+    let networkService: NetworkService
 
-    func perform<Request, Response: Decodable>(
-        request: Request,
-        to endpoint: EndpointDescribing
-    ) async throws -> Response
-}
+    public init(networkService: NetworkService) {
+        self.networkService = networkService
+    }
 
-public extension NetworkProviding {
-    func perform<Request, Response: Decodable>(
+    public func perform<Request, Response: Decodable>(
         request: Request,
         to endpoint: EndpointDescribing
     ) async throws -> Response {
@@ -26,8 +23,10 @@ public extension NetworkProviding {
 
         let decoder = JSONDecoder()
 
-        if Response.self is ErrorResponseDecoding.Type {
-            let isSuccess = (200...299).contains(operationResult.statusCode)
+        if Response.self is ErrorResponseDecoding.Type,
+           let statusCode = operationResult.statusCode
+        {
+            let isSuccess = (200...299).contains(statusCode)
             decoder.userInfo[ErrorResponseDecodingKey.isErrorResponseCodingKey] = !isSuccess
         }
 
@@ -102,7 +101,7 @@ private enum ErrorResponseDecodingKey {
     }
 }
 
-extension Either: Decodable, ErrorResponseDecoding {
+extension NetworkProviding.Either: Decodable, ErrorResponseDecoding {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
 

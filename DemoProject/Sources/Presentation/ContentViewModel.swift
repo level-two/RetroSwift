@@ -17,6 +17,8 @@ final class ContentViewModel: ObservableObject {
             do {
                 let artistDetails = try await api.findArtist(.init(artistName: artist, appId: "123"))
 
+                _ = try await api.testEmptyResponse(.init(artistName: artist, appId: "123"))
+
                 let eventsResponse = try await api.artistEvents(
                     ArtistEventsRequest(
                         artistName: artist,
