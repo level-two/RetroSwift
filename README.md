@@ -9,8 +9,11 @@ final class SchedulesApi: ApiDomain {
     @Get("/api/v1/schedule")
     var getSchedules: (GetSchedulesRequest) async throws -> GetSchedulesResponse
 
-    @Post("/api/v1/schedule")
-    var createSchedule: (CreateScheduleRequest) async throws -> CreateScheduleResponse
+    @Put("/api/v1/schedule")
+    var createSchedule: (CreateScheduleRequest) async throws -> EmptyResponse
+
+    @Post("/api/v1/schedule/{schedule_id}")
+    var updateSchedule: (UpdateScheduleRequest) async throws -> UpdateScheduleResponse
 
     @Delete("/api/v1/schedule/{schedule_id}")
     var deleteSchedule: (DeleteScheduleRequest) async throws -> Either<DeleteScheduleResponse, DeleteScheduleErrorResponse>
