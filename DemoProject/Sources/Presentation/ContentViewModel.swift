@@ -40,7 +40,7 @@ final class ContentViewModel: ObservableObject {
         }
     }
 
-    private let api = BandsInTownApi(networkService: UrlSessionNetworkService())
+    private let api = BandsInTownApi(transport: UrlSessionTransport())
 }
 
 private extension FindArtistResponse {

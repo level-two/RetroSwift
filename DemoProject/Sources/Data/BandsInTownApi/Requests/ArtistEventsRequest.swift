@@ -1,4 +1,5 @@
 import RetroSwift
+import Foundation
 
 struct ArtistEventsRequest {
     @Path("artist_name") var artistName: String = ""

@@ -1,37 +1,28 @@
 import RetroSwift
 import Foundation
 
-final class UrlSessionNetworkService: NetworkService {
-    func setConfiguration(
-        scheme: String,
-        host: String,
-        sharedHeaders: [String: String]
-    ) {
+final class UrlSessionTransport: HttpTransport {
+    func setConfiguration(scheme: String, host: String, sharedHeaders: [String: String]?) {
         self.scheme = scheme
         self.host = host
         self.sharedHeaders = sharedHeaders
     }
 
-    func request(
-        httpMethod: HttpMethod,
-        path: String,
-        headerParams: [String: String]?,
-        queryParams: [String: String]?,
-        body: Encodable?
-    ) async -> NetworkOperationResult {
+    func sendRequest(with params: HttpRequestParams) async throws -> HttpOperationResult {
         do {
             let urlRequest = try assembleURLRequest(
-                httpMethod: httpMethod.asString,
-                path: path,
-                headerParams: headerParams,
-                queryParams: queryParams,
-                body: body)
+                httpMethod:  params.httpMethod.asString,
+                path: params.path,
+                headerParams: params.headerParams,
+                queryParams: params.queryParams,
+                body: params.body)
 
             return await self.perform(request: urlRequest)
         } catch {
-            return NetworkOperationResult(
-                statusCode: 0,
-                result: .failure(error)
+            return HttpOperationResult(
+                statusCode: nil,
+                headers: nil,
+                response: .failure(error)
             )
         }
     }
@@ -50,13 +41,13 @@ final class UrlSessionNetworkService: NetworkService {
     }()
 }
 
-private extension UrlSessionNetworkService {
+private extension UrlSessionTransport {
     func assembleURLRequest(
         httpMethod: String,
         path: String,
         headerParams: [String: String]?,
         queryParams: [String: String]?,
-        body: Encodable?
+        body: Data?
     ) throws -> URLRequest {
         var urlComponents = URLComponents()
 
@@ -76,16 +67,14 @@ private extension UrlSessionNetworkService {
             urlRequest.setValue(value, forHTTPHeaderField: key)
         }
 
-        if let body {
-            urlRequest.httpBody = try JSONEncoder().encode(body)
-        }
+        urlRequest.httpBody = body
 
         return urlRequest
     }
 }
 
-private extension UrlSessionNetworkService {
-    func perform(request: URLRequest) async -> NetworkOperationResult {
+private extension UrlSessionTransport {
+    func perform(request: URLRequest) async -> HttpOperationResult {
         await withCheckedContinuation { [weak self] continuation in
             self?.dataTask(request: request, continuation: continuation)
                 .resume()
@@ -94,7 +83,7 @@ private extension UrlSessionNetworkService {
 
     func dataTask(
         request: URLRequest,
-        continuation: CheckedContinuation<NetworkOperationResult, Never>
+        continuation: CheckedContinuation<HttpOperationResult, Never>
     ) -> URLSessionDataTask {
 
         print("Request:")
@@ -104,25 +93,38 @@ private extension UrlSessionNetworkService {
             print("Response:")
             print(response?.description ?? "")
 
-            let statusCode = (response as? HTTPURLResponse)?.statusCode
+            let httpResponse = response as? HTTPURLResponse
+            let statusCode = httpResponse?.statusCode
+
+            var headers: [String: String]?
+            if let allHeaderFields = httpResponse?.allHeaderFields {
+                headers = [:]
+                allHeaderFields.forEach {
+                    let key = String(describing: $0.key)
+                    let value = String(describing: $0.value)
+                    headers?[key] = value
+                }
+            }
 
             if let error {
                 print("Error:")
                 print(error.localizedDescription)
 
                 continuation.resume(
-                    returning: NetworkOperationResult(
+                    returning: HttpOperationResult(
                         statusCode: statusCode,
-                        result: .failure(error))
+                        headers: headers,
+                        response: .failure(error))
                 )
             } else {
                 print("Body:")
                 print(String(data: data ?? Data(), encoding: .utf8) ?? "")
 
                 continuation.resume(
-                    returning: NetworkOperationResult(
+                    returning: HttpOperationResult(
                         statusCode: statusCode,
-                        result: .success(data ?? Data()))
+                        headers: headers,
+                        response: .success(data ?? Data()))
                 )
             }
         }
@@ -145,8 +147,10 @@ private extension URLRequest {
             description.append("Headers: \(allHTTPHeaderFields)")
         }
 
-        if let httpBody {
-            description.append("Body: \(httpBody)")
+        if let httpBody,
+           let bodyDescription = String(data: httpBody, encoding: .utf8)
+        {
+            description.append("Body: \(bodyDescription)")
         }
 
         return description.joined(separator: "\n")

@@ -1,109 +1,58 @@
-# RetroSwift
+# RetroSwift Demo project
 
 This project demonstrates the way of API contract definition in the Retrofit-like fashion on Swift.
 
 It gives us possibility to define API in this way:
 
 ```swift
-final class SchedulesApi: ApiDomain {
-    @Get("/api/v1/schedule")
-    var getSchedules: (GetSchedulesRequest) async throws -> GetSchedulesResponse
+final class BandsInTownApi: BandsInTownDomain {
+    @Get("/artists/{artist_name}")
+    var findArtist: (FindArtistRequest) async throws -> FindArtistResponse
 
-    @Post("/api/v1/schedule")
-    var createSchedule: (CreateScheduleRequest) async throws -> CreateScheduleResponse
+    @Get("/artists/{artist_name}")
+    var testEmptyResponse: (FindArtistRequest) async throws -> Empty
 
-    @Delete("/api/v1/schedule/{schedule_id}")
-    var deleteSchedule: (DeleteScheduleRequest) async throws -> DeleteScheduleResponse
+    @Get("/artists/{artist_name}/events")
+    var artistEvents: (ArtistEventsRequest) async throws -> Either<ArtistEventsResponse, ArtistEventsErrorResponse>
 }
 ```
 
 Additionally to these definitions *Request types provide more details on contract with the endpoints, namely on particular data fields and their matching to the HTTP params - query, header, path, body:
 
 ```swift
-struct GetSchedulesRequest {
-    @Query var page: Int
-    @Query("limit") var schedulesPerPage: Int = 0
-    @Header("X-Account-Id") var accountId: String = ""
+struct FindArtistRequest {
+    @Path("artist_name") var artistName: String = ""
+    @Query("app_id") var appId: String = ""
 }
 
-struct CreateScheduleRequest {
-    @Header("X-Account-Id") var accountId: String = ""
-    @Body var scheduleBody: Schedule
-}
-
-struct DeleteScheduleRequest {
-    @Path("schedule_id") var ScheduleId: String = ""
-    @Header("X-Account-Id") var accountId: String = ""
+struct ArtistEventsRequest {
+    @Path("artist_name") var artistName: String = ""
+    @Query("app_id") var appId: String = ""
+    @Query var date: String
 }
 ```
 
-Usage is quite simple:
+View model interacts with the API. Yes, it's bad practice, but remember - this is just demo project.
+First it initializes API providing transport layer. UrlSessionTransport implements actual communication through the network
 
 ```swift
-let api = SchedulesApi()
-let request = GetSchedulesRequest(page: 1, schedulesPerPage: 30, accountId: "acc_id")
-let response = try await api.getSchedules(request)
+let api = BandsInTownApi(transport: UrlSessionTransport())
 ```
 
-Additionally responses can be mocked in a straightforward and self-describing way:
-
+Usual request:
 ```swift
-api.getSchedules = { _ in
-    GetSchedulesResponse(....)
-}
-
-api.deleteSchedule = { _ in
-    throw URLError(.userAuthenticationRequired)
-}
+let findArtistRequest = FindArtistRequest(artistName: artist, appId: "123")
+let artistDetails = try await api.findArtist(findArtistRequest)
 ```
 
-And the last thing. ApiDomain in the simplest case can be implemented as follow:
-
+Dropping response data:
 ```swift
-final class BandsInTownDomain: NetworkProviding {
-    required init(networkService: NetworkService) {
-        self.networkService = networkService
-
-        networkService.setConfiguration(
-            scheme: "https",
-            host: "rest.bandsintown.com",
-            sharedHeaders: ["Content-Type": "application/json"])
-    }
-
-    func perform<Request, Response: Decodable>(
-        request: Request,
-        to endpoint: EndpointDescribing
-    ) async throws -> Response {
-
-        try await networkService
-            .request(
-                httpMethod: endpoint.method.asString,
-                path: resolvePath(format: endpoint.path, params: request),
-                headerParams: getHeaderParams(from: request),
-                queryParams: getQueryParams(from: request),
-                body: getBody(from: request))
-    }
-
-    private let networkService: NetworkService
-}
+let findArtistRequest = FindArtistRequest(artistName: artist, appId: "123")
+_ = try await api.testEmptyResponse(findArtistRequest)
 ```
 
-where NetworkService is something implementing HTTP communication through the network:
-
+Response contains decoded data for either successfull response or error one 
 ```swift
-protocol NetworkService {
-    func setConfiguration(
-        scheme: String,
-        host: String,
-        sharedHeaders: [String: String]
-    )
-
-    func request<Response: Decodable>(
-        httpMethod: String,
-        path: String,
-        headerParams: [String: String]?,
-        queryParams: [String: String]?,
-        body: Encodable?
-    ) async throws -> Response
-}
+let eventsRequest = ArtistEventsRequest(artistName: artist, appId: "123", date: "2023-05-05,2023-09-05")
+let eventsResponse = try await api.artistEvents(eventsRequest)
 ```

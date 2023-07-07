@@ -10,7 +10,7 @@ final class SchedulesApi: ApiDomain {
     var getSchedules: (GetSchedulesRequest) async throws -> GetSchedulesResponse
 
     @Put("/api/v1/schedule")
-    var createSchedule: (CreateScheduleRequest) async throws -> EmptyResponse
+    var createSchedule: (CreateScheduleRequest) async throws -> Empty
 
     @Post("/api/v1/schedule/{schedule_id}")
     var updateSchedule: (UpdateScheduleRequest) async throws -> UpdateScheduleResponse
@@ -20,7 +20,7 @@ final class SchedulesApi: ApiDomain {
 }
 ```
 
-Furthermore *Request types provide more details on contract with the endpoints, namely on particular data fields and their matching to the HTTP params - query, header, path, body:
+Furthermore *Request types provide more details on contract with the endpoints, namely on particular data fields and their matching to the HTTP params - `Query`, `Header`, `Path`, `Body`:
 
 ```swift
 struct GetSchedulesRequest {
@@ -31,7 +31,7 @@ struct GetSchedulesRequest {
 
 struct CreateScheduleRequest {
     @Header("X-Account-Id") var accountId: String = ""
-    @Body var scheduleBody: Schedule
+    @JsonBody var scheduleBody: Schedule
 }
 
 struct DeleteScheduleRequest {
@@ -43,7 +43,8 @@ struct DeleteScheduleRequest {
 Usage is quite simple:
 
 ```swift
-let api = SchedulesApi()
+let transport: HttpTransport = ....
+let api = SchedulesApi(transport: transport)
 let request = GetSchedulesRequest(page: 1, schedulesPerPage: 30, accountId: "acc_id")
 let response = try await api.getSchedules(request)
 ```
@@ -70,37 +71,22 @@ api.deleteSchedule = { _ in
 `ApiDomain` in the simplest case can be implemented as follow:
 
 ```swift
-class ApiDomain: NetworkProviding {
-    override init(networkService: NetworkService) {
-        super.init(networkService: networkService)
-
-        networkService.setConfiguration(
-            scheme: "https",
-            host: "rest.somedomain.com",
-            sharedHeaders: ["Content-Type": "application/json"])
+class ApiDomain: Domain {
+    override init(transport: HttpTransport) {
+        super.init(transport: transport)
+        transport.setConfiguration(scheme: "https", host: "rest.bandsintown.com", sharedHeaders: nil)
     }
 }
 ```
 
 More complex solutions can include, for example, session token management.
 
-`NetworkService` is the protocol describing HTTP network communication layer. 
+`HttpTransport` is the protocol describing HTTP network communication layer. 
 
 ```swift
-public protocol NetworkService {
-    func setConfiguration(
-        scheme: String,
-        host: String,
-        sharedHeaders: [String: String]
-    )
-
-    func request(
-        httpMethod: HttpMethod,
-        path: String,
-        headerParams: [String: String]?,
-        queryParams: [String: String]?,
-        body: Encodable?
-    ) async throws -> NetworkOperationResult
+public protocol HttpTransport {
+    func setConfiguration(scheme: String, host: String, sharedHeaders: [String: String]?)
+    func sendRequest(with params: HttpRequestParams) async throws -> HttpOperationResult
 }
 ```
 

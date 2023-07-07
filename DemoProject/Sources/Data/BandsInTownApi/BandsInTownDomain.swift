@@ -1,13 +1,9 @@
 import RetroSwift
 import Foundation
 
-class BandsInTownDomain: NetworkProviding {
-    override init(networkService: NetworkService) {
-        super.init(networkService: networkService)
-
-        networkService.setConfiguration(
-            scheme: "https",
-            host: "rest.bandsintown.com",
-            sharedHeaders: ["Content-Type": "application/json"])
+class BandsInTownDomain: Domain {
+    override init(transport: HttpTransport) {
+        super.init(transport: transport)
+        transport.setConfiguration(scheme: "https", host: "rest.bandsintown.com", sharedHeaders: nil)
     }
 }
