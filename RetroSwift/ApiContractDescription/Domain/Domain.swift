@@ -30,35 +30,6 @@ open class Domain {
         let requestParams = try requestBuilder.buildRequestParams()
         let operationResult = try await transport.sendRequest(with: requestParams)
         let responseData = try operationResult.response.get()
-
-        if Response.self is ErrorResponseDecoding.Type, let statusCode = operationResult.statusCode {
-            let decoder = JSONDecoder()
-            let isSuccess = (200...299).contains(statusCode)
-            decoder.userInfo[ErrorResponseDecodingKey.isErrorResponseCodingKey] = !isSuccess
-            return try decoder.decode(Response.self, from: responseData)
-        } else {
-            let decoder = JSONDecoder()
-            return try decoder.decode(Response.self, from: responseData)
-        }
-    }
-}
-
-private protocol ErrorResponseDecoding { }
-
-private enum ErrorResponseDecodingKey {
-    static var isErrorResponseCodingKey: CodingUserInfoKey {
-        .init(rawValue: #function)!
-    }
-}
-
-extension Domain.Either: Decodable, ErrorResponseDecoding {
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-
-        if decoder.userInfo[ErrorResponseDecodingKey.isErrorResponseCodingKey] as? Bool == true {
-            self = try .errorResponse(container.decode(ErrorResponse.self))
-        } else {
-            self = try .response(container.decode(Response.self))
-        }
+        return try JSONDecoder().decode(Response.self, from: responseData)
     }
 }
