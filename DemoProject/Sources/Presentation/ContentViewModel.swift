@@ -15,16 +15,14 @@ final class ContentViewModel: ObservableObject {
             details = ""
 
             do {
-                let artistDetails = try await api.findArtist(.init(artistName: artist, appId: "123"))
+                let artistDetailsRequest = FindArtistRequest(artistName: artist, appId: "123")
+                let artistDetails = try await api.findArtist(artistDetailsRequest)
 
-                _ = try await api.testEmptyResponse(.init(artistName: artist, appId: "123"))
-
-                let eventsResponse = try await api.artistEvents(
-                    ArtistEventsRequest(
-                        artistName: artist,
-                        appId: corruptAppId ? "fffff" : "123",
-                        date: "2023-05-05,2023-09-05")
-                )
+                let artistEventsRequest = ArtistEventsRequest(
+                    artistName: artist,
+                    appId: corruptAppId ? "fffff" : "123",
+                    date: "2023-05-05,2023-09-05")
+                let eventsResponse = try await api.artistEvents(artistEventsRequest)
 
                 switch eventsResponse {
                 case .response(let events):
