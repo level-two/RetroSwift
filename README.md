@@ -20,7 +20,7 @@ final class SchedulesApi: ApiDomain {
 }
 ```
 
-Furthermore *Request types provide more details on contract with the endpoints, namely on particular data fields and their matching to the HTTP params - `Query`, `Header`, `Path`, `Body`:
+`*Request` types provide more details on endpoints contracts, namely define parameters and their mapping to the HTTP params - `Query`, `Header`, `Path`, `JsonBody`:
 
 ```swift
 struct GetSchedulesRequest {
@@ -45,11 +45,10 @@ Usage is quite simple:
 ```swift
 let transport: HttpTransport = ....
 let api = SchedulesApi(transport: transport)
+
 let request = GetSchedulesRequest(page: 1, schedulesPerPage: 30, accountId: "acc_id")
 let response = try await api.getSchedules(request)
 ```
-
-It is also possible to get decoded error response in case of unsuccess responses (status code is out of 200...299) and non-empty response body. It can be achieved by marking expected response type as `Either<DeleteScheduleResponse, DeleteScheduleErrorResponse>`
 
 Additionally responses can be mocked in a straightforward and self-describing way:
 
@@ -65,7 +64,6 @@ api.deleteSchedule = { _ in
 api.deleteSchedule = { _ in
     .errorResponse(DeleteScheduleErrorResponse(errorMessage: "Schedule not found"))
 }
-
 ```
 
 `ApiDomain` in the simplest case can be implemented as follow:
@@ -118,8 +116,15 @@ Supported response types:
 * `Decodable`
 * `Either<Response: Decodable, ErrorResponse: Decodable>`
 * `Empty`
+`Either` type allows to get either success or error response.
 
-Supports response mocking
+Response mocking. You can easily mock response by assigning directly to the api's endpoint definition:
+
+```swift
+api.deleteSchedule = { _ in
+    .errorResponse(DeleteScheduleErrorResponse(errorMessage: "Schedule not found"))
+}
+```
 
 ## Adding RetroSwift as a Dependency
 
