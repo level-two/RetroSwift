@@ -35,6 +35,11 @@ open class Domain {
         let requestParams = try requestBuilder.buildRequestParams()
         let operationResult = try await transport.sendRequest(with: requestParams)
         let responseData = try operationResult.response.get()
-        return try JSONDecoder().decode(Response.self, from: responseData)
+
+        if responseData.isEmpty, Response.self is Empty.Type {
+            return Empty() as! Response
+        } else {
+            return try JSONDecoder().decode(Response.self, from: responseData)
+        }
     }
 }
