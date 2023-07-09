@@ -12,19 +12,18 @@ extension Domain {
             self.path = path
         }
 
-        public static subscript<EnclosingInstance: Domain>(
-            _enclosingInstance instance: EnclosingInstance,
-            wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingInstance, NetworkAction>,
-            storage storageKeyPath: ReferenceWritableKeyPath<EnclosingInstance, Post>
+        public static subscript<EnclosingDomain: Domain>(
+            _enclosingInstance domain: EnclosingDomain,
+            wrapped networkActionKeyPath: ReferenceWritableKeyPath<EnclosingDomain, NetworkAction>,
+            storage endpointKeyPath: ReferenceWritableKeyPath<EnclosingDomain, Post>
         ) -> NetworkAction {
             get {
-                if let customAction = instance[keyPath: storageKeyPath].customAction {
-                    return customAction
-                }
-                return { try await instance.perform(request: $0, to: instance[keyPath: storageKeyPath]) }
+                let endpoint = domain[keyPath: endpointKeyPath]
+                return endpoint.customAction ?? { try await domain.perform(request: $0, to: endpoint) }
             }
             set {
-                instance[keyPath: storageKeyPath].customAction = newValue
+                let endpoint = domain[keyPath: endpointKeyPath]
+                endpoint.customAction = newValue
             }
         }
 

@@ -7,9 +7,10 @@ open class Domain {
         self.transport = transport
     }
 
-    public func perform<Request, Response: Decodable>(
+    open func perform<Request, Response: Decodable>(
         request: Request,
-        to endpoint: EndpointDescribing
+        to endpoint: EndpointDescribing,
+        customHeaders: [String: String]? = nil
     ) async throws -> Response {
         let requestBuilder = HttpRequestParams.Builder()
         requestBuilder.set(httpMethod: endpoint.method)
@@ -26,6 +27,10 @@ open class Domain {
             .forEach { (paramName: String, param: HttpRequestParameter) in
                 try param.fillHttpRequestFields(forParameterWithName: paramName, in: requestBuilder)
             }
+
+        if let customHeaders {
+            requestBuilder.add(headerParams: customHeaders)
+        }
 
         let requestParams = try requestBuilder.buildRequestParams()
         let operationResult = try await transport.sendRequest(with: requestParams)
