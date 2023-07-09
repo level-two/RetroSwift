@@ -92,6 +92,35 @@ public protocol HttpTransport {
 
 `DemoProject` contains simple implementation based on the UrlSession, but you can provide yours depending on your needs.
 
+## Features
+
+Supported HTTP methods:
+* `@Delete`
+* `@Get`
+* `@Head`
+* `@Patch`
+* `@Post`
+* `@Put`
+
+Supported parameter types:
+* `@Header`
+* `@Path`
+* `@Query`
+* `@JsonBody`
+
+By default parameter name is taken from the variable name, but it can be customized:
+
+```swift
+@Header("X-Account-Id") var accountId: String = ""
+``` 
+
+Supported response types:
+* `Decodable`
+* `Either<Response: Decodable, ErrorResponse: Decodable>`
+* `Empty`
+
+Supports response mocking
+
 ## Adding RetroSwift as a Dependency
 
 ### Xcode
