@@ -113,9 +113,10 @@ By default parameter name is taken from the variable name, but it can be customi
 ``` 
 
 Supported response types:
-* `Decodable`
+* any type conforming to `Decodable`
 * `Either<Response: Decodable, ErrorResponse: Decodable>`
 * `Empty`
+
 `Either` type allows to get either success or error response.
 
 Response mocking. You can easily mock response by assigning directly to the api's endpoint definition:
