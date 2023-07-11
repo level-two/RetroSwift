@@ -5,5 +5,6 @@ final class BandsInTownApi: BandsInTownDomain {
     var findArtist: (FindArtistRequest) async throws -> FindArtistResponse
 
     @Get("/artists/{artist_name}/events")
-    var artistEvents: (ArtistEventsRequest) async throws -> Either<ArtistEventsResponse, ArtistEventsErrorResponse>
+    var artistEvents: (ArtistEventsRequest) async throws
+        -> Either<ArtistEventsResponse, ArtistEventsErrorResponse>
 }

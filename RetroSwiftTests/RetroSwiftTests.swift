@@ -1,3 +1,4 @@
+// FIXME: Header to be removed
 //
 //  RetroSwiftTests.swift
 //  RetroSwiftTests
@@ -8,6 +9,7 @@
 import XCTest
 @testable import RetroSwift
 
+// FIXME: Unit tests to be created or vaped out completely
 final class RetroSwiftTests: XCTestCase {
 
     override func setUpWithError() throws {

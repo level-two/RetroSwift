@@ -11,7 +11,7 @@ final class UrlSessionTransport: HttpTransport {
     func sendRequest(with params: HttpRequestParams) async throws -> HttpOperationResult {
         do {
             let urlRequest = try assembleURLRequest(
-                httpMethod:  params.httpMethod.asString,
+                httpMethod: params.httpMethod.asString,
                 path: params.path,
                 headerParams: params.headerParams,
                 queryParams: params.queryParams,
@@ -89,9 +89,10 @@ private extension UrlSessionTransport {
         print("Request:")
         print(request.customDescription)
 
-        return urlSession.dataTask(with: request) { data, response, error in
-            print("Response:")
-            print(response?.description ?? "")
+        return urlSession.dataTask(with: request) { [weak self] data, response, error in
+            guard let self else { return }
+
+            print(self.responseDescription(forData: data, response: response, error: error))
 
             let httpResponse = response as? HTTPURLResponse
             let statusCode = httpResponse?.statusCode
@@ -106,28 +107,33 @@ private extension UrlSessionTransport {
                 }
             }
 
-            if let error {
-                print("Error:")
-                print(error.localizedDescription)
-
-                continuation.resume(
-                    returning: HttpOperationResult(
-                        statusCode: statusCode,
-                        headers: headers,
-                        response: .failure(error))
+            continuation.resume(
+                returning: HttpOperationResult(
+                    statusCode: statusCode,
+                    headers: headers,
+                    response: error != nil ? .failure(error!) : .success(data ?? Data())
                 )
-            } else {
-                print("Body:")
-                print(String(data: data ?? Data(), encoding: .utf8) ?? "")
-
-                continuation.resume(
-                    returning: HttpOperationResult(
-                        statusCode: statusCode,
-                        headers: headers,
-                        response: .success(data ?? Data()))
-                )
-            }
+            )
         }
+    }
+}
+
+private extension UrlSessionTransport {
+    func responseDescription(forData data: Data?, response: URLResponse?, error: Error?) -> String {
+        var description = [] as [String]
+
+        description.append("Response:")
+        description.append(response?.description ?? "")
+
+        if let error {
+            description.append("Error:")
+            description.append(error.localizedDescription)
+        } else {
+            description.append("Body:")
+            description.append(String(data: data ?? Data(), encoding: .utf8) ?? "Empty")
+        }
+
+        return description.joined(separator: "\n")
     }
 }
 
@@ -147,9 +153,7 @@ private extension URLRequest {
             description.append("Headers: \(allHTTPHeaderFields)")
         }
 
-        if let httpBody,
-           let bodyDescription = String(data: httpBody, encoding: .utf8)
-        {
+        if let httpBody, let bodyDescription = String(data: httpBody, encoding: .utf8) {
             description.append("Body: \(bodyDescription)")
         }
 

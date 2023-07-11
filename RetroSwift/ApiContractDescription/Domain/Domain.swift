@@ -37,6 +37,7 @@ open class Domain {
         let responseData = try operationResult.response.get()
 
         if responseData.isEmpty, Response.self is Empty.Type {
+            // swiftlint:disable:next force_cast
             return Empty() as! Response
         } else {
             return try JSONDecoder().decode(Response.self, from: responseData)

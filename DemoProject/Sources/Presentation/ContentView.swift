@@ -10,7 +10,7 @@ struct ContentView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 8)
         }
-        .alert(isPresented:  Binding { viewModel.error != nil } set: { _ in viewModel.error = nil }) {
+        .alert(isPresented: Binding { viewModel.error != nil } set: { _ in viewModel.error = nil }) {
             Alert(title: Text("Oops!"), message: Text(viewModel.error ?? ""))
         }
     }

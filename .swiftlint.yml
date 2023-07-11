@@ -1,0 +1,46 @@
+# the list of all rules can be found here => https://realm.github.io/SwiftLint/rule-directory.html
+
+line_length: 110
+
+file_length:
+    warning: 300
+    error: 320
+
+function_body_length:
+    warning: 30
+    error: 40
+
+type_name:
+  min_length: 3
+  max_length:
+    warning: 50
+    error: 60
+
+nesting:
+    type_level: 3
+    severity: error
+
+large_tuple:
+    error: 2
+
+opt_in_rules:
+  - custom_rules
+  - unneeded_parentheses_in_closure_argument
+  - implicit_return
+  - let_var_whitespace
+  - multiline_arguments
+  - multiline_parameters
+  - multiline_arguments_brackets
+  - multiline_literal_brackets
+  - multiline_parameters_brackets
+  - multiline_function_chains
+  - operator_usage_whitespace
+  - first_where: error
+  - sorted_first_last: error
+  - last_where: error
+  - extension_access_modifier: error
+  - lower_acl_than_parent: error
+  - empty_count: error
+  - closure_spacing: error
+  - convenience_type: error
+  - comma: error

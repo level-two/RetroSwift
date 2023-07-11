@@ -4,4 +4,3 @@ protocol HttpRequestParameter {
         in builder: HttpRequestParams.Builder
     ) throws
 }
-
