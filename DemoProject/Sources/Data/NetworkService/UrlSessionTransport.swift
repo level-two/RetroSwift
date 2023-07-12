@@ -31,14 +31,15 @@ final class UrlSessionTransport: HttpTransport {
     private var host: String?
     private var sharedHeaders: [String: String]?
 
-    private lazy var urlSession = URLSession(configuration: sessionConfiguration)
-    private lazy var sessionConfiguration = {
-        let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = 30
-        configuration.timeoutIntervalForResource = 300
-        configuration.httpAdditionalHeaders = sharedHeaders
-        return configuration
-    }()
+    private lazy var urlSession = URLSession(
+        configuration: {
+            let configuration = URLSessionConfiguration.default
+            configuration.timeoutIntervalForRequest = 30
+            configuration.timeoutIntervalForResource = 300
+            configuration.httpAdditionalHeaders = sharedHeaders
+            return configuration
+        }()
+    )
 }
 
 private extension UrlSessionTransport {
@@ -86,20 +87,18 @@ private extension UrlSessionTransport {
         continuation: CheckedContinuation<HttpOperationResult, Never>
     ) -> URLSessionDataTask {
 
-        print("Request:")
         print(request.customDescription)
 
-        return urlSession.dataTask(with: request) { [weak self] data, response, error in
-            guard let self else { return }
-
-            print(self.responseDescription(forData: data, response: response, error: error))
+        return urlSession.dataTask(with: request) { data, response, error in
+            print(Self.responseDescription(forData: data, response: response, error: error))
 
             let httpResponse = response as? HTTPURLResponse
             let statusCode = httpResponse?.statusCode
 
             var headers: [String: String]?
+
             if let allHeaderFields = httpResponse?.allHeaderFields {
-                headers = [:]
+                headers = .init(minimumCapacity: allHeaderFields.count)
                 allHeaderFields.forEach {
                     let key = String(describing: $0.key)
                     let value = String(describing: $0.value)
@@ -107,19 +106,34 @@ private extension UrlSessionTransport {
                 }
             }
 
-            continuation.resume(
-                returning: HttpOperationResult(
-                    statusCode: statusCode,
-                    headers: headers,
-                    response: error != nil ? .failure(error!) : .success(data ?? Data())
-                )
+            let operationResult = HttpOperationResult(
+                statusCode: statusCode,
+                headers: headers,
+                response: error != nil ?
+                    .failure(error!) :
+                        .success(data ?? Data())
             )
+
+            continuation.resume(returning: operationResult)
+        }
+    }
+}
+
+private extension HttpMethod {
+    var asString: String {
+        switch self {
+        case .delete: return "DELETE"
+        case .get: return "GET"
+        case .head: return "HEAD"
+        case .patch: return "PATCH"
+        case .post: return "POST"
+        case .put: return "PUT"
         }
     }
 }
 
 private extension UrlSessionTransport {
-    func responseDescription(forData data: Data?, response: URLResponse?, error: Error?) -> String {
+    static func responseDescription(forData data: Data?, response: URLResponse?, error: Error?) -> String {
         var description = [] as [String]
 
         description.append("Response:")
@@ -141,6 +155,8 @@ private extension URLRequest {
     var customDescription: String {
         var description = [] as [String]
 
+        description.append("Request:")
+
         if let httpMethod {
             description.append("Method: \(httpMethod)")
         }
@@ -158,18 +174,5 @@ private extension URLRequest {
         }
 
         return description.joined(separator: "\n")
-    }
-}
-
-private extension HttpMethod {
-    var asString: String {
-        switch self {
-        case .delete: return "DELETE"
-        case .get: return "GET"
-        case .head: return "HEAD"
-        case .patch: return "PATCH"
-        case .post: return "POST"
-        case .put: return "PUT"
-        }
     }
 }
