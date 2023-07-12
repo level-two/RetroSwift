@@ -1,11 +1,3 @@
-// FIXME: Header to be removed
-//
-//  RetroSwiftTests.swift
-//  RetroSwiftTests
-//
-//  Created by Eugene Lychkouski on 6/27/23.
-//
-
 import XCTest
 @testable import RetroSwift
 
