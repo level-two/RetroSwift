@@ -36,11 +36,21 @@ open class Domain {
         let operationResult = try await transport.sendRequest(with: requestParams)
         let responseData = try operationResult.response.get()
 
-        if responseData.isEmpty, Response.self is Empty.Type {
-            // swiftlint:disable:next force_cast
-            return Empty() as! Response
-        } else {
-            return try JSONDecoder().decode(Response.self, from: responseData)
+        if responseData.isEmpty {
+            if Response.self is Empty.Type || Domain.isEitherWithEmptyResponse(Response.self) {
+                return try JSONDecoder().decode(Response.self, from: Domain.emptyJsonData)
+            }
         }
+
+        return try JSONDecoder().decode(Response.self, from: responseData)
     }
+}
+
+private extension Domain {
+    static let emptyJsonData: Data = {
+        guard let data = "{}".data(using: .utf8) else {
+            return Data()
+        }
+        return data
+    }()
 }
