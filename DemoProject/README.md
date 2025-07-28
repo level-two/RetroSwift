@@ -17,7 +17,7 @@ final class BandsInTownApi: BandsInTownDomain {
 }
 ```
 
-Additionally to these definitions *Request types provide more details on contract with the endpoints, namely on particular data fields and their matching to the HTTP params - query, header, path, body:
+Additionally to these definitions *Request types provide more details on contract with the endpoints, namely on particular data fields and their matching to the HTTP params - query, header, path, body and even multipart form:
 
 ```swift
 struct FindArtistRequest {

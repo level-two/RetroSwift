@@ -10,12 +10,7 @@ final class UrlSessionTransport: HttpTransport {
 
     func sendRequest(with params: HttpRequestParams) async throws -> HttpOperationResult {
         do {
-            let urlRequest = try assembleURLRequest(
-                httpMethod: params.httpMethod.asString,
-                path: params.path,
-                headerParams: params.headerParams,
-                queryParams: params.queryParams,
-                body: params.body)
+            let urlRequest = try assembleURLRequest(params: params)
 
             return await self.perform(request: urlRequest)
         } catch {
@@ -43,34 +38,75 @@ final class UrlSessionTransport: HttpTransport {
 }
 
 private extension UrlSessionTransport {
-    func assembleURLRequest(
-        httpMethod: String,
-        path: String,
-        headerParams: [String: String]?,
-        queryParams: [String: String]?,
-        body: Data?
-    ) throws -> URLRequest {
+    func assembleURLRequest(params: HttpRequestParams) throws -> URLRequest {
         var urlComponents = URLComponents()
 
         urlComponents.scheme = scheme
         urlComponents.host = host
-        urlComponents.path = path
-        urlComponents.queryItems = queryParams?.map(URLQueryItem.init)
+        urlComponents.path = params.path
+        urlComponents.queryItems = params.queryParams?.map(URLQueryItem.init)
 
         guard let url = urlComponents.url else {
             throw URLError(.badURL)
         }
 
         var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = httpMethod
+        urlRequest.httpMethod = params.httpMethod.asString
 
-        headerParams?.forEach { key, value in
+        params.headerParams?.forEach { key, value in
             urlRequest.setValue(value, forHTTPHeaderField: key)
         }
 
-        urlRequest.httpBody = body
+        sharedHeaders?.forEach { key, value in
+            urlRequest.setValue(value, forHTTPHeaderField: key)
+        }
+
+        if params.formParams != nil || params.formFiles != nil {
+            let (body, contentType) = makeMultipartBody(
+                params: params.formParams ?? [],
+                files: params.formFiles ?? []
+            )
+            urlRequest.setValue(contentType, forHTTPHeaderField: "Content-Type")
+            urlRequest.httpBody = body
+        } else {
+            urlRequest.httpBody = params.body
+        }
 
         return urlRequest
+    }
+
+    /// Builds the body `Data` and corresponding `Content‑Type` header value.
+    func makeMultipartBody(
+        params: [HttpRequestParams.FormParam],
+        files: [HttpRequestParams.FormFile]
+    ) -> (body: Data, contentType: String) {
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        let lineBreak = "\r\n"
+        var body = Data()
+
+        for param in params {
+            let bodyPart =
+                "--\(boundary)\(lineBreak)" +
+                "Content-Disposition: form-data; name=\"\(param.name)\"\(lineBreak)\(lineBreak)" +
+                "\(param.content)\(lineBreak)"
+
+            body.append(bodyPart.data(using: .utf8)!)
+        }
+
+        for file in files {
+            let bodyPart =
+                "--\(boundary)\(lineBreak)" +
+                "Content-Disposition: form-data; name=\"\(file.name)\"; filename=\"\(file.fileName)\"\(lineBreak)" +
+                "Content-Type: \(file.mimeType)\(lineBreak)\(lineBreak)"
+
+            body.append(bodyPart.data(using: .utf8)!)
+            body.append(file.content)
+            body.append(lineBreak.data(using: .utf8)!)
+        }
+
+        body.append("--\(boundary)--\(lineBreak)".data(using: .utf8)!)
+        return (body, "multipart/form-data; boundary=\(boundary)")
     }
 }
 

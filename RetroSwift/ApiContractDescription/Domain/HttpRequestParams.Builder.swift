@@ -20,6 +20,8 @@ extension HttpRequestParams {
                 path: path,
                 headerParams: headerParams,
                 queryParams: queryParams,
+                formParams: formParams,
+                formFiles: formFiles,
                 body: body)
         }
 
@@ -55,6 +57,20 @@ extension HttpRequestParams {
             }
         }
 
+        func add(formParam: FormParam) {
+            if formParams == nil {
+                formParams = []
+            }
+            formParams?.append(formParam)
+        }
+
+        func add(formFile: FormFile) {
+            if formFiles == nil {
+                formFiles = []
+            }
+            formFiles?.append(formFile)
+        }
+
         func set(body: Data) {
             self.body = body
         }
@@ -64,6 +80,8 @@ extension HttpRequestParams {
         private var pathComponentsValues: [String: String]?
         private var headerParams: [String: String]?
         private var queryParams: [String: String]?
+        private var formParams: [FormParam]?
+        private var formFiles: [FormFile]?
         private var body: Data?
     }
 }

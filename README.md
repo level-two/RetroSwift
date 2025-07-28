@@ -20,7 +20,7 @@ final class SchedulesApi: ApiDomain {
 }
 ```
 
-`*Request` types provide more details on endpoints contracts, namely define parameters and their mapping to the HTTP params - `Query`, `Header`, `Path`, `JsonBody`:
+`*Request` types provide more details on endpoints contracts, namely define parameters and their mapping to the HTTP params - `Query`, `Header`, `Path`, `JsonBody`, `FormParam`, `FormFile`:
 
 ```swift
 struct GetSchedulesRequest {
@@ -38,6 +38,14 @@ struct DeleteScheduleRequest {
     @Path("schedule_id") var ScheduleId: String = ""
     @Header("X-Account-Id") var accountId: String = ""
 }
+
+struct SpeechToTextApiRequest {
+    @FormParam("model_id") var modelId = ""
+    @FormParam("language_code") var languageCode = ""
+    @FormParam("tag_audio_events") var tagAudioEvents = false
+    @FormParam("num_speakers") var numSpeakers = 1
+    @FormFile("file") var recording = .empty
+}
 ```
 
 Usage is quite simple:
@@ -48,6 +56,20 @@ let api = SchedulesApi(transport: transport)
 
 let request = GetSchedulesRequest(page: 1, schedulesPerPage: 30, accountId: "acc_id")
 let response = try await api.getSchedules(request)
+```
+
+Sending multipart form:
+
+```swift
+let request = ElevenLabsApi.SpeechToTextApiRequest(
+    modelId: "scribe_v1",
+    languageCode: languageCode,
+    tagAudioEvents: false,
+    numSpeakers: 1,
+    recording: .init(fileName: "recording.caf", mimeType: "audio/x-caf", content: recording)
+)
+
+let transcribedText = try await api.speechToText(request).text
 ```
 
 Additionally responses can be mocked in a straightforward and self-describing way:
@@ -105,8 +127,10 @@ Supported parameter types:
 * `@Path`
 * `@Query`
 * `@JsonBody`
+* `@FormParam`
+* `@FormFile`
 
-By default parameter name is taken from the variable name, but it can be customized:
+By default parameter name is derived from the variable name, but it can be customized:
 
 ```swift
 @Header("X-Account-Id") var accountId: String = ""

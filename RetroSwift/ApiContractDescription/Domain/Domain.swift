@@ -24,7 +24,15 @@ open class Domain {
                 else { return nil }
                 return (paramName, param)
             }
-            .forEach { (paramName: String, param: HttpRequestParameter) in
+            .map { (paramName: String, param: HttpRequestParameter) in
+                if paramName.prefix(1) == "_" {
+                    // Remove leading underscore from parameter name
+                    (String(paramName.dropFirst()), param)
+                } else {
+                    (paramName, param)
+                }
+            }
+            .forEach { paramName, param in
                 try param.fillHttpRequestFields(forParameterWithName: paramName, in: requestBuilder)
             }
 
