@@ -10,14 +10,14 @@ public struct HttpRequestParams {
     public let body: Data?
 
     public struct FormParam {
-        let name: String
-        let content: String
+        public let name: String
+        public let content: String
     }
 
     public struct FormFile {
-        let name: String
-        let fileName: String
-        let mimeType: String
-        let content: Data
+        public let name: String
+        public let fileName: String
+        public let mimeType: String
+        public let content: Data
     }
 }
